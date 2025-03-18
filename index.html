@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Readable - Markdown Viewer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+    /* General styling */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+      padding: 40px;
+      margin: 0;
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Container */
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background-color: #252526;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      border: 1px solid #333;
+    }
+
+    /* Title */
+    .title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #ff9800;
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ff9800;
+      padding-bottom: 10px;
+    }
+
+    /* Custom file input container */
+    .file-input-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    /* Hidden default input */
+    #fileInput {
+      display: none;
+    }
+
+    /* Custom file upload button */
+    .custom-file-upload {
+      background-color: #ff9800;
+      color: #1e1e1e;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .custom-file-upload:hover {
+      background-color: #ffa726;
+    }
+
+    /* Icon for upload */
+    .upload-icon {
+      font-size: 18px;
+    }
+
+    /* Headers */
+    h1, h2, h3, h4, h5, h6 {
+      color: #ff9800;
+      margin-bottom: 12px;
+      font-weight: 600;
+      border-bottom: 2px solid #ff9800;
+      padding-bottom: 5px;
+    }
+
+    /* Links */
+    a {
+      color: #64b5f6;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    a:hover {
+      color: #ff9800;
+    }
+
+    /* Paragraphs and lists */
+    p, li {
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    ul, ol {
+      padding-left: 20px;
+    }
+
+    /* Code blocks */
+    pre {
+      background-color: #1e1e1e;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid #444;
+      margin-bottom: 16px;
+    }
+
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      color: #ff9800;
+    }
+
+    /* Inline code */
+    p code, li code {
+      background-color: #2e2e2e;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #ff9800;
+    }
+
+    /* Blockquotes */
+    blockquote {
+      border-left: 4px solid #ff9800;
+      padding-left: 16px;
+      color: #aaa;
+      margin: 12px 0;
+      font-style: italic;
+    }
+
+    /* Horizontal Rule */
+    hr {
+      border: none;
+      border-top: 1px solid #444;
+      margin: 24px 0;
+    }
+
+    /* Scrollable content */
+    .readme-container {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    /* Custom Scrollbar */
+    .readme-container::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .readme-container::-webkit-scrollbar-thumb {
+      background-color: #ff9800;
+      border-radius: 5px;
+    }
+
+    .readme-container::-webkit-scrollbar-track {
+      background-color: #2e2e2e;
+      border-radius: 5px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .custom-file-upload {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Project Name -->
+  <div class="title">Readable - Markdown Viewer</div>
+
+  <!-- Custom File Input -->
+  <div class="file-input-container">
+    <label for="fileInput" class="custom-file-upload">
+      <span class="upload-icon">📂</span>
+      Choose Markdown File
+    </label>
+    <input type="file" id="fileInput" accept=".md" onchange="loadFile()" />
+  </div>
+
+  <!-- Markdown display area -->
+  <div id="readme" class="readme-container"></div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<script>
+  // Load a user-uploaded file
+  function loadFile() {
+    const file = document.getElementById('fileInput').files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.type !== "text/markdown" && !file.name.endsWith(".md")) {
+      alert("Please select a valid Markdown (.md) file");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => renderMarkdown(e.target.result);
+    reader.readAsText(file);
+  }
+
+  // Convert Markdown to HTML and display it
+  function renderMarkdown(markdown) {
+    const readmeContainer = document.getElementById('readme');
+    readmeContainer.innerHTML = marked.parse(markdown);
+
+    // Highlight code blocks using highlight.js
+    document.querySelectorAll('pre code').forEach((block) => {
+      hljs.highlightElement(block);
+    });
+  }
+</script>
+
+</body>
+</html>
